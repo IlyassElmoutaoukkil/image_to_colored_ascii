@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="html2canvas.min.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <div id="img_show_div" style="z-index: 5;;position:absolute;display:none; width:100%;height:100%;top:0px;right:0px;background-color:white;opacity: 0.95;text-align:center;" >
+        <a style="position: absolute;top:20px;right:20px;" onclick="CloseExportDiv()" >X</a>
+        <div style="margin:auto">
+            <img id="img_show" src="" alt="" style="height:80%">
+            <div><a id="img_link" href=""> download </a></div>    
+        </div>
+        
+    </div>
+
+    <div id="main_page" style="display: flex;height:100vh">
+        <div style="width:25%;padding:20px;display:grid">
+            <img src="image.png" id="image" alt="" style="height: auto;width:20%;margin-bottom:10px;margin:auto;">
+            <input type="file" id="image_input" onchange="putImage()" style="margin: auto;">
+            <div class="option_container">
+                <label for="text">Text</label>
+                <input name="text" id="text_area" name="" id="" cols="30" rows="10" value='&'>
+            </div>
+            <div class="option_container">
+                <label for="letter_spacing">Line height</label>
+                <input name="letter_spacing" type="range" value="0.4" min="0" max="15" step="0.1" id="letter_spacing_slider">
+            </div>
+            <div class="option_container">
+                <label for="letter_size">Letter size</label>
+                <input name="letter_size" type="range" value="22" min="2" max="30" id="letter_size_slider">
+            </div>
+            <div class="option_container">
+                <label  for="line_height">Letter spacing</label>
+                <input name="line_height" type="range" value="1" min="-10" max="10" id="line_height_slider">
+            </div>
+            <div class="option_container">
+                <label  for="letter_weight">Letter Weight</label>
+                <input name="letter_weight" type="range" value="500" min="100" max="900" id="letter_weight_slider">
+            </div>
+            <div id="smoothing_ratio_div" style="display: none;" class="option_container">
+                <label  for="smoothing_ratio">smoothing ratio</label>
+                <input name="smoothing_ratio" type="range" value="1" min="1" max="9" id="smoothing_ratio">
+            </div>
+            <div class="option_container">
+                <label  for="ImageSmouthing">Image smouthing</label>
+                <input  type="checkbox" name="ImageSmouthing" id="ImageSmouthing">
+            </div>
+            <div id="color_selection_container" style="display: block;">
+                <label  for="backgroud_color">png background color</label>
+                <input  type="color" name="backgroud_color" id="backgroud_color">
+            </div>
+
+            <div id="general_color_selection_container" style="display: block;">
+                <label  for="general_backgroud_color">background color</label>
+                <input  type="color" name="general_backgroud_color" id="general_backgroud_color">
+            </div>
+        </div>
+
+
+    
+        <div id="canvas_container" style="width:75%;display: flex;">
+            <div id="disp" style="margin:auto;font-weight: 900;letter-spacing:-10px; font-size:20px;line-height: 7px;width:min-content;height:auto;border: 2px gray;" >
+                
+            </div>
+            
+            <canvas  id="canvas" style="height:100%;width:100%;display: none;">
+            
+            </canvas>
+
+            <button onclick="DownloadAsImage()" style="border-radius: 3px;box-shadow: 0px 0px 10px blueviolet;border:none;position: absolute;right:20px;top:20px;padding:10px;background-color:blueviolet;color:white" >
+                export
+            </button>
+
+            <div id="previewImage" style="display:none">
+
+            </div>
+
+        </div>
+        
+    </div>
+    
+</body>
+
+<script>
+    // setting everthing up
+
+    // read the image 
+
+    // convert it to a matrix of RGB colors
+
+    // get the text 
+
+    // find how to give a litter a color;
+
+    
+ 
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    var sizing_ratio = 1;
+    var image_height = 60
+    var image_width = 60
+    var image_smoothing = false
+    var background_color = '#ffffff'
+    var extention = 'png'
+    var letter_spacing = 10
+    
+    function CloseExportDiv(){
+        document.getElementById('img_show_div').style.display='none';
+        document.getElementById('main_page').style.display='flex';
+    }
+
+    function DownloadAsImage(){
+
+        // img_show_div
+        // img_show
+        // img_link
+
+        var getCanvas = null
+        html2canvas(document.getElementById('disp')).then((canvas2)=>{
+                document.getElementById("previewImage").append(canvas2);
+                getCanvas = canvas2;
+                console.log(canvas2)
+        }).then(()=>{
+            var imageData = getCanvas.toDataURL("image/png");
+            // Now browser starts downloading it instead of just showing it
+            var newData = imageData.replace("image/png", "image/octet-stream");
+            
+            document.getElementById('img_show_div').style.display='flex'
+            document.getElementById('main_page').style.display='none';
+            document.getElementById('img_show').setAttribute("src", imageData)
+            document.getElementById('img_link').setAttribute('download',`export${String((Math.random(10)*5000)).split('.')[0]}.png`)
+            document.getElementById('img_link').setAttribute('href',newData)
+            
+        })
+
+
+        
+    }
+
+    function showImage(src, target) {
+        var fileReader = new FileReader();
+        fileReader.onload = function (e) { target.src = this.result; draw() };
+        fileReader.readAsDataURL(src.files[0]);      
+    }
+
+    function putImage() {
+        var src = document.getElementById("image_input");
+        var target = document.getElementById("image");
+
+        // check extention 
+        const filename_splited =  src.files[0].name.split('.');
+        extention = filename_splited[filename_splited.length-1]
+
+        // enable background color selection 
+        if(extention == 'png'){
+            document.getElementById('color_selection_container').style.display = 'block'
+        }else{
+            document.getElementById('color_selection_container').style.display = 'none'
+        }
+        
+        showImage(src, target);
+    }
+
+
+    object_margin_right = []
+    object_margin_left = []
+
+    function draw(){
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        var image = new Image();
+
+        image.onload = function(){
+            console.log('image loaded')
+
+            number_length = String(image.width).length
+            ratio = '0.';
+            for (let r = 0; r < number_length.length; r++) {
+                ratio = ratio+'0'
+            }
+            ratio = Number(ratio+sizing_ratio)
+            document.getElementById("canvas").setAttribute('height',image.height+'px')
+            document.getElementById("canvas").setAttribute('width',image.width+'px')
+
+            if(!image_smoothing){
+                ctx.msImageSmoothingEnabled = false;
+                ctx.mozImageSmoothingEnabled = false;
+                ctx.webkitImageSmoothingEnabled = false;
+                ctx.imageSmoothingEnabled = false;
+            }
+            
+            ctx.drawImage(
+                image, 0, 0,    
+                Math.floor(image.width*ratio), 
+                Math.floor(image.height*ratio)
+            );
+
+            text = ''
+            var text_value = document.getElementById("text_area").value;
+            text_value = text_value.replaceAll(' ','_')
+
+            t=0
+
+            // TODO make this work even whene we change the letter or text
+            // TODO make empty space using margin
+            // TODO make this shows a html code inside a textarea,
+            pexil = 0
+            margin = 0
+            last_visible_element = null
+            emptyRightSpace = 0
+            visibleCaracter = false
+            
+            for (let y = 0; y < Math.floor(image.height*ratio); y=y+3) {
+                
+                    for (let x = 0; x < Math.floor(image.width*ratio); x=x+3) {
+                        t++
+                        pexil++
+                        var c = ctx.getImageData(x, y, 2, 3).data;
+                        if((text_value.length-1)>t){
+                            var letter =  text_value[t]
+                        }else{
+                            var letter = text_value[0]
+                            t=-1
+                        }
+
+                        if(extention=='png' && (c[0]=='0' && c[1]=='0' && c[2]=='0' && c[3]=='0')){
+                            text = text+`<a style="color:${background_color}">${letter}</a>`
+                            if(last_visible_element!=null){
+                                margin = margin+letter_spacing
+                                margin_id = {}
+                                margin_id.pexil = last_visible_element
+                                margin_id.margin = margin    
+                                object_margin_right.push(margin_id)
+                            }
+
+                            if (!visibleCaracter){
+                                emptyRightSpace = emptyRightSpace+letter_spacing
+                                margin_id_left = {}
+                                margin_id_left.margin = margin
+                            }
+
+                        }else{
+                            text = text+`<a id="${pexil}" style="color:rgb(${c[0]},${c[1]},${c[2]},${c[3]})">${letter}</a>`
+                            last_visible_element = pexil
+                            object_margin_left.push({pexil:pexil,margin:emptyRightSpace})
+                            visibleCaracter = true
+                        }
+
+                    }
+                    visibleCaracter = false
+                    margin = 0
+                    emptyRightSpace = 0
+                    text = text+' '
+            }
+            document.getElementById("disp").innerHTML=text;
+
+            setTimeout(function(){
+                for (let p = 0; p < object_margin_right.length; p++) {
+                const element = object_margin_right[p];
+                document.getElementById(String(element.pexil)).style.marginRight = element.margin+'px'
+            }
+            console.log(object_margin_left)
+
+            for (let ml= 0; ml< object_margin_left.length; ml++) {
+                const elm = object_margin_left[ml];
+                document.getElementById(String(elm.pexil)).style.marginLeft = elm.margin+'px'
+            }
+            },2000)
+            
+            
+        };
+
+
+        image.src = document.getElementById('image').getAttribute('src');
+        
+    }
+
+    window.onload = function(){
+        draw()
+    }
+    
+    document.getElementById("text_area").onchange = function(){
+        draw()
+    }
+
+
+    text = ''
+
+
+    var letter_spacing_value = document.getElementById("letter_spacing_slider");
+    var letter_size_value = document.getElementById("letter_size_slider");
+    var line_height_value = document.getElementById("line_height_slider");
+    var letter_weight_value = document.getElementById("letter_weight_slider");
+    var image_smouting = document.getElementById("ImageSmouthing");
+    var smoothing_ratio = document.getElementById("smoothing_ratio");
+    var general_color_selection = document.getElementById("general_color_selection");
+
+    // Update the current slider value (each time you drag the slider handle)
+    letter_spacing_value.oninput = function() {
+        this.value;
+        document.getElementById("disp").style.lineHeight = this.value+'px'
+        letter_spacing= this.value
+    }
+
+    letter_size_value.oninput = function() {
+        this.value;
+        document.getElementById("disp").style.fontSize = this.value+'px'
+    }
+
+    line_height_value.oninput = function() {
+        this.value;
+        document.getElementById("disp").style.letterSpacing = this.value+'px'
+    }
+
+    letter_weight_value.oninput = function() {
+        this.value;
+        document.getElementById("disp").style.fontWeight = this.value
+    }
+
+    smoothing_ratio.oninput = function() {
+        sizing_ratio = this.value;
+        draw()
+    }
+
+    general_backgroud_color.onchange = function() {
+        document.getElementById('disp').style.backgroundColor=this.value
+    }
+    
+    image_smouting.onchange = function() {
+        image_smoothing = image_smouting.checked
+        if(image_smoothing){
+            document.getElementById("smoothing_ratio_div").style.display = 'block'
+            alert('smoothing the image may cause some freezing...')
+        }else{
+            document.getElementById("smoothing_ratio_div").style.display = 'none'
+            sizing_ratio = 1
+        }
+        draw()
+    }
+
+    backgroud_color.onchange = function() {
+        background_color  = this.value
+        draw()
+    }
+
+</script>
+
+<style>
+    label {
+        width:50%;
+        text-align: left;
+    }
+
+    .option_container{
+        width:100%;
+    }
+</style>
+</html>
